@@ -4,7 +4,11 @@
 import torch
 import torch.nn as nn
 from torch_scatter import scatter
-from torch_geometric.nn.acts import swish
+
+#from torch_geometric.nn.acts import swish
+from torch_geometric.nn.resolver import activation_resolver
+swish = activation_resolver('swish')
+
 from torch_geometric.nn.inits import glorot_orthogonal
 from torch_geometric.nn.models.dimenet import (
     BesselBasisLayer,
