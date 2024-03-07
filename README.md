@@ -1,4 +1,14 @@
+# My Install
+
+```bash
+conda env create -f new_env.yml
+conda activate cdvae
+pip install -e .
+```
+
+
 # Crystal Diffusion Variational AutoEncoder
+Forked from https://github.com/txie-93/cdvae/tree/main
 
 This software implementes Crystal Diffusion Variational AutoEncoder (CDVAE), which generates the periodic structure of materials.
 
