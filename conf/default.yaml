@@ -8,10 +8,10 @@ core:
 
 hydra:
   run:
-    dir: ${oc.env:HYDRA_JOBS}/singlerun/${now:%Y-%m-%d}/${expname}/
+    dir: ${oc.env:HYDRA_JOBS}/singlerun/${now:%Y-%m}/${expname}/
 
   sweep:
-    dir: ${oc.env:HYDRA_JOBS}/multirun/${now:%Y-%m-%d}/${expname}/
+    dir: ${oc.env:HYDRA_JOBS}/multirun/${now:%Y-%m}/${expname}/
     subdir: ${hydra.job.num}_${hydra.job.id}
 
   job:

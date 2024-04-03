@@ -5,7 +5,10 @@ import hydra
 
 from scipy.spatial.distance import pdist
 from scipy.spatial.distance import cdist
-from hydra.experimental import compose
+
+#from hydra.experimental import compose
+from hydra import compose  # UserWarning: hydra.experimental.compose() is no longer experimental. Use hydra.compose()
+
 from hydra import initialize_config_dir
 from pathlib import Path
 
@@ -16,7 +19,7 @@ from cdvae.common.constants import CompScalerMeans, CompScalerStds
 from cdvae.common.data_utils import StandardScaler, chemical_symbols
 from cdvae.pl_data.dataset import TensorCrystDataset
 from cdvae.pl_data.datamodule import worker_init_fn
-
+from cdvae.pl_modules.model import CDVAE
 from torch_geometric.loader import DataLoader
 
 CompScaler = StandardScaler(
@@ -35,7 +38,10 @@ def load_data(file_path):
             else:
                 data[k] = torch.from_numpy(v).unsqueeze(0)
     else:
-        data = torch.load(file_path)
+        # RuntimeError: Attempting to deserialize object on a CUDA device but torch.cuda.is_available() is False. 
+        # If you are running on a CPU-only machine, please use torch.load with map_location=torch.device('cpu') to map your storages to the CPU.
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        data = torch.load(file_path, map_location=device)
     return data
 
 
@@ -47,13 +53,13 @@ def get_model_path(eval_model_name):
 
 
 def load_config(model_path):
-    with initialize_config_dir(str(model_path)):
+    with initialize_config_dir(str(model_path), version_base=None):
         cfg = compose(config_name='hparams')
     return cfg
 
 
 def load_model(model_path, load_data=False, testing=True):
-    with initialize_config_dir(str(model_path)):
+    with initialize_config_dir(str(model_path), version_base=None):
         cfg = compose(config_name='hparams')
         model = hydra.utils.instantiate(
             cfg.model,
@@ -67,7 +73,11 @@ def load_model(model_path, load_data=False, testing=True):
             ckpt_epochs = np.array(
                 [int(ckpt.parts[-1].split('-')[0].split('=')[1]) for ckpt in ckpts])
             ckpt = str(ckpts[ckpt_epochs.argsort()[-1]])
-        model = model.load_from_checkpoint(ckpt)
+        
+        # https://github.com/Lightning-AI/pytorch-lightning/issues/18169
+        #print(type(model).__name__)
+        #model = model.load_from_checkpoint(ckpt)
+        model = CDVAE.load_from_checkpoint(ckpt)
         model.lattice_scaler = torch.load(model_path / 'lattice_scaler.pt')
         model.scaler = torch.load(model_path / 'prop_scaler.pt')
 

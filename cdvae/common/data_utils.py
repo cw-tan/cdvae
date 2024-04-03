@@ -82,7 +82,7 @@ chemical_symbols = [
 
 CrystalNN = local_env.CrystalNN(
     distance_cutoffs=None, x_diff_weight=-1, porous_adjustment=False)
-
+BrunnerNN_real = local_env.BrunnerNN_real()
 
 def build_crystal(crystal_str, niggli=True, primitive=False):
     """Build crystal from cif string."""
@@ -108,10 +108,14 @@ def build_crystal(crystal_str, niggli=True, primitive=False):
 def build_crystal_graph(crystal, graph_method='crystalnn'):
     """
     """
-
+    # added BrunnerNN_real option because
+    # slabs -> "No Voronoi neighbors found for site - try increasing cutoff."
     if graph_method == 'crystalnn':
         crystal_graph = StructureGraph.with_local_env_strategy(
             crystal, CrystalNN)
+    elif graph_method == 'brunnernn':
+        crystal_graph = StructureGraph.with_local_env_strategy(
+            crystal, BrunnerNN_real)
     elif graph_method == 'none':
         pass
     else:
