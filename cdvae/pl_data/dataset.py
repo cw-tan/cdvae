@@ -45,6 +45,7 @@ class CrystDataset(Dataset):
 
     def __getitem__(self, index):
         data_dict = self.cached_data[index]
+        matid = data_dict.get('mp_id', '')
 
         # scaler is set in DataModule set stage
         prop = self.scaler.transform(data_dict[self.prop])
@@ -66,6 +67,7 @@ class CrystDataset(Dataset):
             num_bonds=edge_indices.shape[0],
             num_nodes=num_atoms,  # special attribute used for batching in pytorch geometric
             y=prop.view(1, -1),
+            matid=matid,  # pass ID
         )
         return data
 
